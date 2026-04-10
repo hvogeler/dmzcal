@@ -11,6 +11,7 @@ import logging
 import tkinter as tk
 import tkinter.font as tkfont
 from datetime import date, datetime
+from enum import Enum
 from pathlib import Path
 from typing import Final
 
@@ -42,6 +43,8 @@ _COLOR_ORANGE: Final[str] = "#FFB347"
 _COLOR_BLACK: Final[str] = "#000000"
 
 _TICK_INTERVAL_MS: Final[int] = 1000
+_CORNER_SIZE: Final[int] = 80
+_EXIT_TAP_TIMEOUT_MS: Final[int] = 5000
 
 # Preferred font families in order of priority.
 _PREFERRED_FAMILIES: Final[tuple[str, ...]] = (
@@ -56,6 +59,30 @@ _FULLSCREEN_WIDTH: Final[int] = 1280
 _FULLSCREEN_HEIGHT: Final[int] = 720
 _WINDOWED_WIDTH: Final[int] = 800
 _WINDOWED_HEIGHT: Final[int] = 480
+
+
+# ---------------------------------------------------------------------------
+# Exit tap state machine enums
+# ---------------------------------------------------------------------------
+
+
+class ExitTapState(Enum):
+    """States for the four-corner exit tap sequence."""
+
+    IDLE = "idle"
+    TOP_LEFT_TAPPED = "top_left_tapped"
+    TOP_RIGHT_TAPPED = "top_right_tapped"
+    BOTTOM_RIGHT_TAPPED = "bottom_right_tapped"
+
+
+class Corner(Enum):
+    """Screen corner classification for tap detection."""
+
+    TOP_LEFT = "top_left"
+    TOP_RIGHT = "top_right"
+    BOTTOM_RIGHT = "bottom_right"
+    BOTTOM_LEFT = "bottom_left"
+    NONE = "none"
 
 
 # ---------------------------------------------------------------------------
@@ -284,6 +311,14 @@ class CalendarDisplay:
         )
         self.special_label.place(relx=1.0, rely=1.0, anchor="se", x=-10, y=-6)
 
+        # --- exit mechanism state --------------------------------------------
+        self._exit_tap_state: ExitTapState = ExitTapState.IDLE
+        self._exit_tap_timer: str | None = None
+
+        self._root.bind("<Button-1>", self._on_tap)
+        self._root.bind("<Control-Shift-q>", self._exit_app_event)
+        self._root.bind("<Control-Shift-Q>", self._exit_app_event)
+
         # --- initial draw & start tick loop ----------------------------------
         self._tick()
 
@@ -317,6 +352,101 @@ class CalendarDisplay:
             self._update_date_labels(today)
 
         self._root.after(_TICK_INTERVAL_MS, self._tick)
+
+    # ------------------------------------------------------------------
+    # Exit mechanism
+    # ------------------------------------------------------------------
+
+    def _classify_corner(self, x: int, y: int) -> Corner:
+        """Return which corner zone *(x, y)* falls into, or ``NONE``."""
+        width: int = self._root.winfo_width()
+        height: int = self._root.winfo_height()
+
+        in_left: bool = x < _CORNER_SIZE
+        in_right: bool = x >= width - _CORNER_SIZE
+        in_top: bool = y < _CORNER_SIZE
+        in_bottom: bool = y >= height - _CORNER_SIZE
+
+        if in_left and in_top:
+            return Corner.TOP_LEFT
+        if in_right and in_top:
+            return Corner.TOP_RIGHT
+        if in_right and in_bottom:
+            return Corner.BOTTOM_RIGHT
+        if in_left and in_bottom:
+            return Corner.BOTTOM_LEFT
+        return Corner.NONE
+
+    def _on_tap(self, event: tk.Event[tk.Misc]) -> None:
+        """Handle a mouse click and feed it to the exit tap state machine."""
+        corner: Corner = self._classify_corner(event.x, event.y)
+        if corner is Corner.NONE:
+            return
+        self._advance_exit_state(corner)
+
+    def _reset_exit_sequence(self) -> None:
+        """Reset the exit tap state machine to IDLE and cancel any pending timeout."""
+        if self._exit_tap_timer is not None:
+            self._root.after_cancel(self._exit_tap_timer)
+            self._exit_tap_timer = None
+        if self._exit_tap_state is not ExitTapState.IDLE:
+            logger.debug("Exit tap sequence reset from %s to IDLE", self._exit_tap_state.value)
+        self._exit_tap_state = ExitTapState.IDLE
+
+    def _advance_exit_state(self, corner: Corner) -> None:
+        """Advance the four-corner exit state machine based on *corner*."""
+        state = self._exit_tap_state
+
+        if state is ExitTapState.IDLE:
+            if corner is Corner.TOP_LEFT:
+                self._reset_exit_sequence()
+                self._exit_tap_state = ExitTapState.TOP_LEFT_TAPPED
+                self._exit_tap_timer = self._root.after(
+                    _EXIT_TAP_TIMEOUT_MS, self._reset_exit_sequence
+                )
+                logger.debug("Exit tap: TOP_LEFT tapped — waiting for TOP_RIGHT")
+            else:
+                self._reset_exit_sequence()
+
+        elif state is ExitTapState.TOP_LEFT_TAPPED:
+            if corner is Corner.TOP_RIGHT:
+                self._reset_exit_sequence()
+                self._exit_tap_state = ExitTapState.TOP_RIGHT_TAPPED
+                self._exit_tap_timer = self._root.after(
+                    _EXIT_TAP_TIMEOUT_MS, self._reset_exit_sequence
+                )
+                logger.debug("Exit tap: TOP_RIGHT tapped — waiting for BOTTOM_RIGHT")
+            else:
+                self._reset_exit_sequence()
+
+        elif state is ExitTapState.TOP_RIGHT_TAPPED:
+            if corner is Corner.BOTTOM_RIGHT:
+                self._reset_exit_sequence()
+                self._exit_tap_state = ExitTapState.BOTTOM_RIGHT_TAPPED
+                self._exit_tap_timer = self._root.after(
+                    _EXIT_TAP_TIMEOUT_MS, self._reset_exit_sequence
+                )
+                logger.debug("Exit tap: BOTTOM_RIGHT tapped — waiting for BOTTOM_LEFT")
+            else:
+                self._reset_exit_sequence()
+
+        elif state is ExitTapState.BOTTOM_RIGHT_TAPPED:
+            if corner is Corner.BOTTOM_LEFT:
+                self._reset_exit_sequence()
+                logger.info("Exit tap sequence completed — exiting application")
+                self._exit_app()
+            else:
+                self._reset_exit_sequence()
+
+    def _exit_app(self) -> None:
+        """Log and destroy the root window to exit the application."""
+        logger.info("Exiting DMZ calendar application")
+        self._root.destroy()
+
+    def _exit_app_event(self, event: tk.Event[tk.Misc]) -> None:
+        """Handle Ctrl+Shift+Q keyboard shortcut to exit."""
+        logger.info("Ctrl+Shift+Q pressed — exiting application")
+        self._exit_app()
 
     # ------------------------------------------------------------------
     # Public API
