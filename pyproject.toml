@@ -1,0 +1,73 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "mypackage"
+version = "0.1.0"
+description = "Python template project"
+requires-python = ">=3.12"
+dependencies = []
+
+[project.optional-dependencies]
+dev = [
+    "mypy>=1.9",
+    "black>=24.0",
+    "isort>=5.13",
+    "ruff>=0.4",
+    "pytest>=8.0",
+    "pytest-cov>=5.0",
+    "pip-tools>=7.0",
+    "rich>=13.0",
+    "pdoc>=14.0",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src"]
+
+# --- mypy -----------------------------------------------------------
+[tool.mypy]
+python_version = "3.12"
+strict = true
+# strict expands to:
+#   disallow_any_generics, disallow_subclassing_any,
+#   disallow_untyped_calls, disallow_untyped_defs,
+#   disallow_incomplete_defs, check_untyped_defs,
+#   disallow_untyped_decorators, warn_redundant_casts,
+#   warn_unused_ignores, warn_return_any, no_implicit_reexport,
+#   strict_equality, extra_checks
+warn_unreachable = true
+show_error_codes = true
+pretty = true
+
+# --- black ----------------------------------------------------------
+[tool.black]
+line-length = 100
+target-version = ["py312"]
+
+# --- isort ----------------------------------------------------------
+[tool.isort]
+profile = "black"
+line_length = 100
+
+# --- ruff -----------------------------------------------------------
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B", "C4", "SIM"]
+ignore = ["D100", "D101", "D102", "D103"]
+
+# --- pytest ---------------------------------------------------------
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "--tb=short --strict-markers"
+
+[tool.coverage.run]
+source = ["src"]
+branch = true
+
+[tool.coverage.report]
+show_missing = true
+fail_under = 80

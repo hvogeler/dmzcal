@@ -1,0 +1,11 @@
+{
+  "recommendations": [
+    "ms-python.python",           // Python base extension
+    "ms-python.pylance",          // Pylance — strict type intellisense
+    "ms-python.mypy-type-checker",// mypy inline diagnostics
+    "ms-python.black-formatter",  // Black formatter
+    "ms-python.isort",            // isort import sorter
+    "charliermarsh.ruff",         // Ruff linter
+    "ms-python.debugpy"           // Python debugger
+  ]
+}
