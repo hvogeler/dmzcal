@@ -45,6 +45,7 @@ _TICK_INTERVAL_MS: Final[int] = 1000
 
 # Preferred font families in order of priority.
 _PREFERRED_FAMILIES: Final[tuple[str, ...]] = (
+    "Inter",
     "Noto Sans",
     "Roboto",
     "DejaVu Sans",
@@ -220,15 +221,12 @@ class CalendarDisplay:
         # touch the very edge of the screen.
         usable_width: int = int(target_width * 0.96)
         day_size: int = _compute_day_font_size(self._root, family, usable_width)
-        special_size: int = max(day_size // 3, 12)
         date_size: int = max(day_size // 3, 12)
         time_size: int = max(day_size // 4, 10)
+        special_size: int = max(day_size // 5, 10)
 
         self._day_font: Final[tkfont.Font] = tkfont.Font(
             root=self._root, family=family, size=day_size, weight="bold"
-        )
-        self._special_font: Final[tkfont.Font] = tkfont.Font(
-            root=self._root, family=family, size=special_size, weight="bold"
         )
         self._date_font: Final[tkfont.Font] = tkfont.Font(
             root=self._root, family=family, size=date_size, weight="bold"
@@ -236,9 +234,12 @@ class CalendarDisplay:
         self._time_font: Final[tkfont.Font] = tkfont.Font(
             root=self._root, family=family, size=time_size, weight="bold"
         )
+        self._special_font: Final[tkfont.Font] = tkfont.Font(
+            root=self._root, family=family, size=special_size, weight="normal"
+        )
 
         # --- layout ----------------------------------------------------------
-        # A single centred frame holds all labels.
+        # A single centred frame holds the main labels (day, date, time).
         self._frame: Final[tk.Frame] = tk.Frame(self._root, background=_COLOR_BLACK)
         self._frame.pack(expand=True)
 
@@ -251,16 +252,6 @@ class CalendarDisplay:
             anchor="center",
         )
         self.day_label.pack(fill="x", pady=(0, 4))
-
-        self.special_label: Final[tk.Label] = tk.Label(
-            self._frame,
-            text="",
-            font=self._special_font,
-            foreground=_COLOR_ORANGE,
-            background=_COLOR_BLACK,
-            anchor="center",
-        )
-        self.special_label.pack(fill="x", pady=(0, 4))
 
         self.date_label: Final[tk.Label] = tk.Label(
             self._frame,
@@ -281,6 +272,17 @@ class CalendarDisplay:
             anchor="center",
         )
         self.time_label.pack(fill="x")
+
+        # Special label (holiday/birthday) pinned to the bottom-right corner.
+        self.special_label: Final[tk.Label] = tk.Label(
+            self._root,
+            text="",
+            font=self._special_font,
+            foreground=_COLOR_ORANGE,
+            background=_COLOR_BLACK,
+            anchor="e",
+        )
+        self.special_label.place(relx=1.0, rely=1.0, anchor="se", x=-10, y=-6)
 
         # --- initial draw & start tick loop ----------------------------------
         self._tick()
