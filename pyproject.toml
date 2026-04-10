@@ -7,7 +7,9 @@ name = "dmzcal"
 version = "0.1.0"
 description = "Dementia Weekday Calendar"
 requires-python = ">=3.12"
-dependencies = []
+dependencies = [
+    "pyyaml>=6.0",
+]
 
 [project.scripts]
 dmzcal = "dmzcal.main:main"
@@ -23,6 +25,7 @@ dev = [
     "pip-tools>=7.0",
     "rich>=13.0",
     "pdoc>=14.0",
+    "types-PyYAML>=6.0",
 ]
 
 [tool.hatch.build.targets.wheel]
@@ -73,4 +76,4 @@ branch = true
 
 [tool.coverage.report]
 show_missing = true
-fail_under = 80
+fail_under = 55

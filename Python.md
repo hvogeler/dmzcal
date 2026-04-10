@@ -1,7 +1,7 @@
 # Installing Python Environment
 If you want to run the python scripts in a new environment 
 ```
-uv venv .venv
+uv venv .venv --python 3.14
 source .venv/bin/activate
 uv pip install -e ".[dev]"
 ```
@@ -12,5 +12,14 @@ The scripts should be executable and run directly.
 
 If not type
 ```
-python <script>.py
+python -m dmzcal
 ```
+
+# Run Python tests
+```
+pytest -v
+```
+
+# Run the App
+## from different user
+sudo -u ubuntu DISPLAY=:0 /home/hvo/dmzcal/.venv/bin/dmzcal --windowed --verbose

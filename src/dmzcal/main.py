@@ -1,13 +1,19 @@
-"""Entry point."""
+"""Entry point for the DMZ dementia calendar application."""
 
 from __future__ import annotations
 
 import argparse
 import logging
-import subprocess
+import tkinter as tk
 from pathlib import Path
+from typing import Final
 
 from rich.logging import RichHandler
+
+from dmzcal.clock import CalendarDisplay
+from dmzcal.config import DEFAULT_CONFIG_PATH, load_config
+
+logger: Final = logging.getLogger(__name__)
 
 
 def setup_logging(level: int = logging.INFO) -> None:
@@ -19,51 +25,46 @@ def setup_logging(level: int = logging.INFO) -> None:
     )
 
 
-logger = logging.getLogger(__name__)
-
-
-def hello(name: str) -> str:
-    """Return a greeting string for the given name."""
-    return f"Hello {name}"
-
-
-def df() -> None:
-    """Run the system `df -h` command and log its output."""
-    try:
-        result = subprocess.run(
-            ["df", "-h"],
-            capture_output=True,
-            text=True,
-            check=True,
-        )
-        logger.info("%s", result.stdout)
-    except subprocess.CalledProcessError as e:
-        logger.error("Failed to run df command: %s", e)
-
-
-def read_file() -> None:
-    """Read /etc/hosts and log its contents."""
-    p = Path("/etc/hosts")
-    logger.info("Reading '%s' file", p.name)
-    content = p.read_text(encoding="iso8859-1")
-    logger.info("%s file content: %s", p.name, content)
-
-
 def main() -> None:
-    """Parse CLI arguments and run the main workflow."""
-    setup_logging(level=logging.INFO)
-    parser = argparse.ArgumentParser(description="gen-db-load-psets")
-
+    """Parse CLI arguments, load configuration, and launch the calendar UI."""
+    parser = argparse.ArgumentParser(
+        description="DMZ Dementia Calendar — large-format day-of-week display",
+    )
     parser.add_argument(
-        "-n", "--name", required=True, type=str, default="No-Name", help="Name to hello"
+        "-c",
+        "--config",
+        type=Path,
+        default=DEFAULT_CONFIG_PATH,
+        help="Path to the birthdays YAML config file (default: %(default)s)",
+    )
+    parser.add_argument(
+        "-w",
+        "--windowed",
+        action="store_true",
+        default=False,
+        help="Run in windowed mode instead of fullscreen (useful for development)",
+    )
+    parser.add_argument(
+        "-v",
+        "--verbose",
+        action="store_true",
+        default=False,
+        help="Enable verbose (DEBUG) logging",
     )
 
     args = parser.parse_args()
-    name: str = args.name
 
-    logger.info("Name is '%s'", name)
-    logger.info("%s", hello(name=name))
+    log_level: int = logging.DEBUG if args.verbose else logging.INFO
+    setup_logging(level=log_level)
 
-    df()
-    read_file()
+    config_path: Path = args.config
+    logger.info("Loading config from: %s", config_path)
+    config = load_config(config_path)
+    logger.info("Loaded %d birthday(s)", len(config.birthdays))
 
+    fullscreen: bool = not args.windowed
+    logger.info("Starting calendar display (fullscreen=%s)", fullscreen)
+
+    root = tk.Tk()
+    display = CalendarDisplay(root=root, config=config, fullscreen=fullscreen)
+    display.run()

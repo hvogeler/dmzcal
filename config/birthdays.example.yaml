@@ -1,0 +1,29 @@
+# DMZ Dementia Calendar — Birthday Configuration
+#
+# Copy this file to ~/.config/dmzcal/birthdays.yaml and edit it
+# with the birthdays of your relatives.
+#
+# Each entry needs:
+#   name  — the person's name (shown on screen)
+#   month — birth month (1–12)
+#   day   — birth day (1–31)
+
+birthdays:
+    - name: "Doris"
+      month: 1
+      day: 26
+    - name: "Heiko"
+      month: 11
+      day: 2
+    - name: "Christoph"
+      month: 10
+      day: 1
+    - name: "Julius"
+      month: 07
+      day: 20
+    - name: "Johannes"
+      month: 3
+      day: 24
+    - name: "Ulla"
+      month: 3
+      day: 30

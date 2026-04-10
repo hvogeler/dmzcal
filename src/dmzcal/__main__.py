@@ -1,4 +1,4 @@
-"""Entry point."""
+"""Allow running the package with ``python -m dmzcal``."""
 
 from dmzcal.main import main
 

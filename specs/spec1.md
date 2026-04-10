@@ -1,5 +1,5 @@
 # Dementia Calendar
-This project is to build a dementia calender. It runs on a raspberry pi with a 7" hdmi display attached.
+This project is to build a dementia calender. It runs on a raspberry pi with a 7" display attached.
 It will be placed in a prominent place in the apartment of an elderly person who tends to forget what day it is.
 
 # General Architecture
@@ -52,4 +52,41 @@ If it is a holiday or a birthday they should be displayed in a smaller font. Sam
 If it is a holiday AND a birthday falling on the same day, both should be displayed on one line with a ' - ' between them
 
 ### Screen resolution
-I do not know. Can this be 
+1280 x 720, landscape
+
+### Day-of-week font sizing
+It should be the same font for each day of the week. A Fixed font is fine.
+
+### Python version
+Python 3.14 is not in alpha!!! I am surprised how old your training data is. Please verify on the internet.
+
+### Color scheme
+Yes, high contrast. White on black. Except for the holidays and birthdays. They should be light orange.
+
+### Font / typeface
+Yes bold sans-serif. I like Roboto or Noto
+
+### Pi auto-start
+Do not include it for now. Let us first write the app and then see how we autostart it on boot.
+
+## Questions 2
+1. **Font installation**: Only Noto Sans **Mono** Bold is installed on this system. For a calendar display, a proportional font like **Noto Sans Bold** would look much better. Should I install `fonts-noto-sans` via apt, or should we bundle a `.ttf` file in the project, or is Noto Sans Mono Bold acceptable?
+
+2. **Time display**: Should the time show seconds (`14:35:07`) or just hours and minutes (`14:35`)? I'm leaning toward just `HH:MM` since seconds would be distracting and the time is the least important element.
+
+3. **Birthday display prefix**: The spec doesn't specify exactly. I'm planning `"Geburtstag: Oma"` — does that format work, or would you prefer just the name or a different format?
+
+4. **Config file location**: I'll default to `~/.config/dmzcal/birthdays.yaml` but allow override via `--config`. Sound good?
+
+## Answers 2
+### Font installation
+I like the idea of bundling the font with the app in this project. Please bundle Noto and Roboto and Bahnschrift.
+
+### Time display
+'HH:MM' is perfect
+
+### Birthday display prefix
+Yes, with prefix
+
+### Config file location
+your suggestion does sound great.
