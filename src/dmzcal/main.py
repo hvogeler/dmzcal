@@ -67,6 +67,3 @@ def main() -> None:
     df()
     read_file()
 
-
-if __name__ == "__main__":
-    main()

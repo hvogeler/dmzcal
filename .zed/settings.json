@@ -1,0 +1,17 @@
+{
+  "lsp": {
+    "pyright": {
+      "settings": {
+        "python": {
+          "pythonPath": ".venv/bin/python",
+          "venvPath": ".",
+          "venv": ".venv",
+        },
+        "python.analysis": {
+          "typeCheckingMode": "strict",
+          "extraPaths": ["src"],
+        },
+      },
+    },
+  },
+}
