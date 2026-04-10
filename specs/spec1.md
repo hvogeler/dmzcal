@@ -24,7 +24,8 @@ Remembering the day of the week is actually the main purpose of the app.
 Significantly smaller should be special meaning and date. 
 Time should be even smaller and definitely the least prominent information.
 
-# Open Questions
+# Questions from Claude
+## Questions 1
 
 1. **Birthdays** — Which relatives' birthdays should be included? Is this a hardcoded list in a config file, or should there be a way to add/edit birthdays at runtime?
 
@@ -42,3 +43,13 @@ Time should be even smaller and definitely the least prominent information.
 
 8. **Font / typeface** — Any preferred typeface, or should we choose something clear and legible (e.g., a bold sans-serif)?
 
+## Answers 1
+### Birthdays
+Birthdays should be provided in a static config file. Config files should be in yaml format.
+
+### Holiday and birthday display
+If it is a holiday or a birthday they should be displayed in a smaller font. Same font as the date. 
+If it is a holiday AND a birthday falling on the same day, both should be displayed on one line with a ' - ' between them
+
+### Screen resolution
+I do not know. Can this be 
