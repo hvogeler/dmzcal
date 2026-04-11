@@ -15,7 +15,7 @@ def get_max_brightness() -> int:
     return int(result.stdout)
 
 
-def set_brightness(percent: int):
+def set_brightness(percent: int) -> None:
     """Set display brightness in percent"""
     try:
         max_brightness = get_max_brightness()
@@ -32,4 +32,4 @@ def set_brightness(percent: int):
         )
 
     except subprocess.CalledProcessError as e:
-        logger.error("Failed to run df command: %s", e)
+        logger.error("Failed to set brightness: %s", e)

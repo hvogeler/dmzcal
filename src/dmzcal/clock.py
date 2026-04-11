@@ -64,7 +64,7 @@ _WINDOWED_HEIGHT: Final[int] = 480
 _BRIGHTNESS_PERCENT_DAY: int = 60
 _BRIGHTNESS_PERCENT_NIGHT: int = 15
 
-_NIGHT_STARTS_AT_HOUR: int = 18
+_NIGHT_STARTS_AT_HOUR: int = 21
 _DAY_STARTS_AT_HOUR: int = 7
 
 
@@ -359,8 +359,7 @@ class CalendarDisplay:
             self._current_date = today
             self._update_date_labels(today)
 
-        # Set brightness
-        logger.info("Hour is %d", now.hour)
+            # Set brightness
         if now.hour >= _NIGHT_STARTS_AT_HOUR or now.hour < _DAY_STARTS_AT_HOUR:  # noqa: SIM102
             if self.brightness != _BRIGHTNESS_PERCENT_NIGHT:
                 logger.info("Change brightness to %d %%", _BRIGHTNESS_PERCENT_NIGHT)
