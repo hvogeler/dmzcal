@@ -12,6 +12,7 @@ from rich.logging import RichHandler
 
 from dmzcal.clock import CalendarDisplay
 from dmzcal.config import DEFAULT_CONFIG_PATH, load_config
+from dmzcal.display import set_brightness
 
 logger: Final = logging.getLogger(__name__)
 

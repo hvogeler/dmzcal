@@ -16,6 +16,7 @@ from pathlib import Path
 from typing import Final
 
 from dmzcal.config import Config, get_birthdays_for_date
+from dmzcal.display import set_brightness
 from dmzcal.holidays import get_holiday_for_date
 
 logger: Final = logging.getLogger(__name__)
@@ -42,7 +43,7 @@ _COLOR_WHITE: Final[str] = "#FFFFFF"
 _COLOR_ORANGE: Final[str] = "#FFB347"
 _COLOR_BLACK: Final[str] = "#000000"
 
-_TICK_INTERVAL_MS: Final[int] = 1000
+_TICK_INTERVAL_MS: Final[int] = 5000
 _CORNER_SIZE: Final[int] = 80
 _EXIT_TAP_TIMEOUT_MS: Final[int] = 5000
 
@@ -59,6 +60,12 @@ _FULLSCREEN_WIDTH: Final[int] = 1280
 _FULLSCREEN_HEIGHT: Final[int] = 720
 _WINDOWED_WIDTH: Final[int] = 800
 _WINDOWED_HEIGHT: Final[int] = 480
+
+_BRIGHTNESS_PERCENT_DAY: int = 60
+_BRIGHTNESS_PERCENT_NIGHT: int = 30
+
+_NIGHT_STARTS_AT_HOUR: int = 18
+_DAY_STARTS_AT_HOUR: int = 7
 
 
 # ---------------------------------------------------------------------------
@@ -222,6 +229,7 @@ class CalendarDisplay:
         self._root: Final[tk.Tk] = root
         self._config: Final[Config] = config
         self._fullscreen: Final[bool] = fullscreen
+        self.brightness: int = 0
 
         # Track the currently displayed date so we only refresh date-dependent
         # labels when the day actually changes.
@@ -248,8 +256,8 @@ class CalendarDisplay:
         # touch the very edge of the screen.
         usable_width: int = int(target_width * 0.96)
         day_size: int = _compute_day_font_size(self._root, family, usable_width)
-        date_size: int = max(day_size // 3, 12)
-        time_size: int = max(day_size // 4, 10)
+        date_size: int = max(day_size // 5, 12)
+        time_size: int = max(day_size // 8, 10)
         special_size: int = max(day_size // 5, 10)
 
         self._day_font: Final[tkfont.Font] = tkfont.Font(
@@ -338,7 +346,7 @@ class CalendarDisplay:
         self.date_label.configure(text=date_text)
 
     def _tick(self) -> None:
-        """Called every second to refresh the display."""
+        """Called every _TICK_INTERVAL_MS to refresh the display."""
         now: datetime = datetime.now()
         today: date = now.date()
 
@@ -350,6 +358,19 @@ class CalendarDisplay:
         if self._current_date != today:
             self._current_date = today
             self._update_date_labels(today)
+
+        # Set brightness
+        logger.info("Hour is %d", now.hour)
+        if now.hour >= _NIGHT_STARTS_AT_HOUR or now.hour < _DAY_STARTS_AT_HOUR:  # noqa: SIM102
+            if self.brightness != _BRIGHTNESS_PERCENT_NIGHT:
+                logger.info("Change brightness to %d %%", _BRIGHTNESS_PERCENT_NIGHT)
+                self.brightness = _BRIGHTNESS_PERCENT_NIGHT
+                set_brightness(self.brightness)
+        if now.hour >= _DAY_STARTS_AT_HOUR and now.hour < _NIGHT_STARTS_AT_HOUR:  # noqa: SIM102
+            if self.brightness != _BRIGHTNESS_PERCENT_DAY:
+                logger.info("Change brightness to %d %%", _BRIGHTNESS_PERCENT_DAY)
+                self.brightness = _BRIGHTNESS_PERCENT_DAY
+                set_brightness(self.brightness)
 
         self._root.after(_TICK_INTERVAL_MS, self._tick)
 
